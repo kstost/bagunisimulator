@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>코깎노 시뮬레이션</title>
+
+  <!-- PIXICS, SweetAlert2, 코드 실행 관련 스크립트 -->
+  <script src="https://cdn.jsdelivr.net/gh/kstost/PIXICS@09253c2/loader.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="system.js"></script>
+
+  <!-- 구글 머터리얼 디자인 (Roboto 폰트) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" />
+
+  <!-- CodeMirror 기본 CSS 및 어두운 테마 (material-darker) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+
+  <style>
+    /* 웹사이트 전체 어두운 테마 및 창 전체 사용 (Material 스타일 적용) */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #121212;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    /* system.js에서 생성하는 canvas를 가운데 정렬 */
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* 햄버거 버튼 (Material 스타일) */
+    .hamburger-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 10000;
+      width: 40px;
+      height: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .hamburger-btn span {
+      display: block;
+      height: 4px;
+      background: #fff;
+      border-radius: 2px;
+      transition: 0.4s;
+    }
+
+    /* 슬라이딩 메뉴 (Material Design 느낌) */
+    .sliding-menu {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background: #1F1F1F;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
+      z-index: 10001;
+      transition: left 0.3s ease;
+      padding-top: 60px;
+      box-sizing: border-box;
+    }
+
+    .sliding-menu.open {
+      left: 0;
+    }
+
+    .sliding-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sliding-menu ul li {
+      padding: 16px 24px;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .sliding-menu ul li a {
+      color: inherit;
+      text-decoration: none;
+      display: block;
+      margin: -16px -24px;
+      padding: 16px 24px;
+    }
+
+    .sliding-menu ul li:hover {
+      background-color: #333333;
+    }
+
+    /* 메뉴 외 영역을 어둡게 처리하는 오버레이 */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .menu-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* 모달 (CodeMirror, API) 공통 스타일 - 모달이 화면 전체를 채움 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 11000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      background: #1F1F1F;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow: auto;
+      border-radius: 4px;
+    }
+
+    /* CodeMirror 모달 전용 버튼 (취소, 실행)를 오른쪽 상단에 배치하고 예쁜 디자인 적용 */
+    .modal-buttons {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 12000;
+    }
+
+    .modal-buttons button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      background-color: #2979ff;
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.2s ease;
+    }
+
+    .modal-buttons button:hover {
+      background-color: #1565c0;
+    }
+
+    /* API 모달 닫기 버튼 (오른쪽 상단) */
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      z-index: 12000;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background-color: #d32f2f;
+    }
+
+    /* CodeMirror 편집기 스타일 (어두운 테마 적용, 코드 영역은 왼쪽 정렬, Monospace 폰트, 폰트 크기 1.5배) */
+    .CodeMirror {
+      text-align: left;
+      font-family: monospace;
+      font-size: 1.5em;
+      height: auto;
+      background-color: #1e1e1e;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- system.js에 의해 canvas 요소가 생성됩니다. (기존 엘리먼트는 canvas 생성 시 제거됨) -->
+
+  <script>
+    // body > canvas 요소가 생성되기 전까지는 기존 동적 UI를 생성하지 않고,
+    // body > canvas 요소가 생성된 후 UI(햄버거 버튼, 메뉴, 모달 등)를 동적으로 추가합니다.
+    document.addEventListener("DOMContentLoaded", function () {
+      const observer = new MutationObserver((mutations, obs) => {
+        if (document.querySelector("body > canvas")) {
+          createUIElements();
+          obs.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true });
+    });
+
+    function createUIElements() {
+      // 햄버거 버튼 생성
+      const hamburger = document.createElement("div");
+      hamburger.className = "hamburger-btn";
+      hamburger.innerHTML = "<span></span><span></span><span></span>";
+      document.body.appendChild(hamburger);
+
+      // 슬라이딩 메뉴 생성 (메뉴 항목에 추가 링크 포함)
+      const slidingMenu = document.createElement("div");
+      slidingMenu.className = "sliding-menu";
+      slidingMenu.innerHTML =
+        `<ul>
+          <li id="runCode">코드 실행</li>
+          <li id="viewAPI">API 확인</li>
+          <li><a href="https://cokac.com/" target="_blank">코드깎는노인 클래스</a></li>
+          <li><a href="https://www.youtube.com/@%EC%BD%94%EB%93%9C%EA%B9%8E%EB%8A%94%EB%85%B8%EC%9D%B8" target="_blank">코드깎는노인 유튜브채널</a></li>
+        </ul>`;
+      document.body.appendChild(slidingMenu);
+
+      // 메뉴 외 영역 오버레이 생성 (메뉴가 열렸을 때 배경을 어둡게 처리)
+      const menuOverlay = document.createElement("div");
+      menuOverlay.className = "menu-overlay";
+      document.body.appendChild(menuOverlay);
+
+      // 햄버거 버튼 클릭 시 메뉴와 오버레이 토글
+      hamburger.addEventListener("click", function () {
+        slidingMenu.classList.toggle("open");
+        if (slidingMenu.classList.contains("open")) {
+          menuOverlay.classList.add("visible");
+        } else {
+          menuOverlay.classList.remove("visible");
+        }
+      });
+
+      // 오버레이 클릭 시 메뉴 닫기
+      menuOverlay.addEventListener("click", function () {
+        slidingMenu.classList.remove("open");
+        menuOverlay.classList.remove("visible");
+      });
+
+      // 메뉴 항목 클릭 이벤트 처리
+      document.getElementById("runCode").addEventListener("click", function () {
+        slidingMenu.classList.remove("open");
+        menuOverlay.classList.remove("visible");
+        openCodeModal();
+      });
+
+      document.getElementById("viewAPI").addEventListener("click", function () {
+        slidingMenu.classList.remove("open");
+        menuOverlay.classList.remove("visible");
+        openAPIModal();
+      });
+    }
+
+    function openCodeModal() {
+      // CodeMirror 모달 동적 생성 (어두운 테마 material-darker 적용)
+      const modal = document.createElement("div");
+      modal.className = "modal-overlay";
+
+      const content = document.createElement("div");
+      content.className = "modal-content";
+
+      // CodeMirror 편집기용 textarea 생성
+      const editorTextArea = document.createElement("textarea");
+      editorTextArea.value = "// 여기에 코드를 작성하세요.\n";
+      content.appendChild(editorTextArea);
+
+      // CodeMirror 전용 버튼들을 오른쪽 상단에 배치
+      const btnContainer = document.createElement("div");
+      btnContainer.className = "modal-buttons";
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "취소";
+      const runBtn = document.createElement("button");
+      runBtn.textContent = "실행";
+      btnContainer.appendChild(cancelBtn);
+      btnContainer.appendChild(runBtn);
+      content.appendChild(btnContainer);
+
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+
+      // CodeMirror 초기화 (어두운 테마 적용, 높이를 컨테이너 100%로 지정)
+      const editor = CodeMirror.fromTextArea(editorTextArea, {
+        mode: "javascript",
+        theme: "material-darker",
+        lineNumbers: true
+      });
+      editor.setSize("100%", "100%");
+
+      // 버튼 클릭 이벤트 처리
+      cancelBtn.addEventListener("click", function () {
+        document.body.removeChild(modal);
+      });
+      runBtn.addEventListener("click", function () {
+        try {
+          eval(editor.getValue() + '\nsolve();');
+        } catch (e) {
+          alert(e);
+        }
+        document.body.removeChild(modal);
+      });
+    }
+
+    function openAPIModal() {
+      // API 문서 모달 동적 생성 (apidoc.html을 iframe으로 표시)
+      const modal = document.createElement("div");
+      modal.className = "modal-overlay";
+
+      const content = document.createElement("div");
+      content.className = "modal-content";
+
+      // 닫기 버튼 (오른쪽 상단)
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "modal-close";
+      closeBtn.textContent = "닫기";
+      content.appendChild(closeBtn);
+
+      // apidoc.html을 iframe으로 표시 (컨테이너 너비 100% 적용)
+      const iframe = document.createElement("iframe");
+      iframe.src = "apidoc.html";
+      iframe.style.width = "100%";
+      iframe.style.height = "calc(100% - 40px)";
+      iframe.style.border = "none";
+      content.appendChild(iframe);
+
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+
+      closeBtn.addEventListener("click", function () {
+        document.body.removeChild(modal);
+      });
+    }
+  </script>
+</body>
+
+</html>

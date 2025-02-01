@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코깎노 시뮬레이션 API 문서</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #FFFFFF;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1F1F1F;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #333333;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333333;
+            padding-bottom: 5px;
+        }
+
+        section h3 {
+            font-size: 1.4rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #76c7c0;
+        }
+
+        code {
+            display: inline-block;
+            background-color: #1F1F1F;
+            color: #76c7c0;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-family: "Courier New", monospace;
+        }
+
+        pre {
+            background-color: #1F1F1F;
+            color: #76c7c0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .description {
+            margin-bottom: 10px;
+        }
+
+        .parameters, .returns {
+            margin-bottom: 20px;
+        }
+
+        .parameters li, .returns li {
+            margin: 5px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #1F1F1F;
+            border-top: 2px solid #333333;
+            color: #CCCCCC;
+        }
+
+        a {
+            color: #76c7c0;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>코깎노 시뮬레이션 API 문서</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>일반 함수</h2>
+
+            <h3>await window.tick()</h3>
+            <p class="description">16ms 동안 대기합니다.</p>
+            <pre><code>await tick();</code></pre>
+        </section>
+
+        <section>
+            <h2>수도꼭지 (Faucet) API</h2>
+
+            <h3>await window.faucet.moveLeft()</h3>
+            <p class="description">수도꼭지를 왼쪽으로 이동합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 이동 성공 여부 (연료 부족 시 <code>false</code>)</li>
+            </ul>
+
+            <h3>await window.faucet.moveRight()</h3>
+            <p class="description">수도꼭지를 오른쪽으로 이동합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 이동 성공 여부 (연료 부족 시 <code>false</code>)</li>
+            </ul>
+
+            <h3>window.faucet.getLeftFuel()</h3>
+            <p class="description">수도꼭지가 이동할 수 있는 남은 연료량을 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>number</code> 남은 연료량 (0~1)</li>
+            </ul>
+
+            <h3>window.faucet.getPosition()</h3>
+            <p class="description">수도꼭지의 현재 위치를 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>number</code> 수도꼭지의 위치 (작은 값일수록 왼쪽)</li>
+            </ul>
+
+            <h3>window.faucet.switch()</h3>
+            <p class="description">수도꼭지의 물을 켜거나 끕니다 (토글).</p>
+
+            <h3>window.faucet.isTurnedOn()</h3>
+            <p class="description">수도꼭지의 물이 켜져 있는지 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 켜져 있으면 <code>true</code>, 꺼져 있으면 <code>false</code></li>
+            </ul>
+
+            <h3>window.faucet.isAimed()</h3>
+            <p class="description">수도꼭지가 바구니를 정확히 향하고 있는지 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 향하고 있으면 <code>true</code>, 아니면 <code>false</code></li>
+            </ul>
+
+            <h3>window.faucet.distanceTo(baguni)</h3>
+            <p class="description">수도꼭지와 특정 바구니 사이의 거리를 계산합니다.</p>
+            <ul class="parameters">
+                <li><strong>매개변수:</strong> <code>baguni (Object)</code> 바구니 객체</li>
+            </ul>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>number</code> 거리 (<code>0</code>이면 정확히 맞음, 음수면 왼쪽으로 이동 필요)</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>바구니 (Baguni) API</h2>
+
+            <h3>await window.baguniList[index].moveLeft()</h3>
+            <p class="description">지정된 바구니를 왼쪽으로 이동합니다.</p>
+
+            <h3>await window.baguniList[index].moveRight()</h3>
+            <p class="description">지정된 바구니를 오른쪽으로 이동합니다.</p>
+
+            <h3>window.baguniList[index].isFull()</h3>
+            <p class="description">지정된 바구니가 물로 가득 찼는지 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 가득 찼으면 <code>true</code>, 아니면 <code>false</code></li>
+            </ul>
+
+            <h3>window.baguniList[index].isCollided()</h3>
+            <p class="description">지정된 바구니가 다른 바구니와 충돌했는지 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>boolean</code> 충돌했으면 <code>true</code>, 아니면 <code>false</code></li>
+            </ul>
+
+            <h3>window.baguniList[index].getPosition()</h3>
+            <p class="description">지정된 바구니의 현재 위치를 확인합니다.</p>
+            <ul class="returns">
+                <li><strong>반환값:</strong> <code>number</code> 바구니의 위치 (작은 값일수록 왼쪽)</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 코깎노 시뮬레이션 API 문서. 코드깎는노인 모든 권리 보유.</p>
+    </footer>
+</body>
+</html>
