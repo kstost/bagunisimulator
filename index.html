@@ -278,16 +278,6 @@
         menuOverlay.classList.remove("visible");
         openAPIModal();
       });
-
-      runCode();
-    }
-
-    function runCode() {
-      const codeToRunOnNextPageRefreshed = localStorage.getItem('codeToRunOnNextPageRefreshed');
-      if (codeToRunOnNextPageRefreshed) {
-        localStorage.removeItem('codeToRunOnNextPageRefreshed');
-        eval(codeToRunOnNextPageRefreshed);
-      }
     }
 
     function openCodeModal() {
@@ -331,9 +321,7 @@
       });
       runBtn.addEventListener("click", function () {
         try {
-          const codeToRunOnNextPageRefreshed = editor.getValue() + '\nsolve();';
-          localStorage.setItem('codeToRunOnNextPageRefreshed', codeToRunOnNextPageRefreshed);
-          window.location.reload();
+          eval(editor.getValue() + '\nsolve();');
         } catch (e) {
           alert(e);
         }
