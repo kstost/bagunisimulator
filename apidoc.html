@@ -148,9 +148,14 @@
             </ul>
 
             <h3>window.faucet.isAimed()</h3>
-            <p class="description">수도꼭지가 바구니를 정확히 향하고 있는지 확인합니다.</p>
+            <p class="description">
+                수도꼭지가 바구니를 정확히 향하고 있는지 확인합니다. 단, 만약 가득 찬 바구니에 대해서는 언제나 <code>false</code>를 리턴합니다.
+            </p>
             <ul class="returns">
-                <li><strong>반환값:</strong> <code>boolean</code> 향하고 있으면 <code>true</code>, 아니면 <code>false</code></li>
+                <li>
+                    <strong>반환값:</strong> <code>boolean</code> 
+                    (가득 찬 바구니인 경우 항상 <code>false</code>, 그렇지 않은 경우 바구니를 정확히 향하면 <code>true</code>, 아니면 <code>false</code>)
+                </li>
             </ul>
 
             <h3>window.faucet.distanceTo(baguni)</h3>
