@@ -65,7 +65,7 @@ window.addEventListener('load', async () => {
                let baguniCenter = baguniList[i].getCenter();
                let aimlineX = aimline.getPosition().x;
                if (Math.abs(baguniCenter - aimlineX) <= 20 * ratio) {
-                  if (false && baguniList[i].isFull()) {
+                  if (baguniList[i].isFull()) {
                      aimed = false;
                   } else {
                      aimed = true;
@@ -670,5 +670,4 @@ window.addEventListener('load', async () => {
 
 
 });
-
 
